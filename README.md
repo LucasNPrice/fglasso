@@ -1,7 +1,9 @@
 # fglasso
 functional gaussian graphical model via functional graphical lasso for network analysis 
 
-"fglasso1.R" - fglasso to return conditional dependencies of node/variables in data; a network analysis algorithm. 
+Work still in progress. 
+
+"fglasso2.R" - fglasso to return conditional dependencies of node/variables in data; a network analysis algorithm. 
 
   - Algorithm_1: essentially __main__ function to perform the entire fglasso algorithm. 
   
