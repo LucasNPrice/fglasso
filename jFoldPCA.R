@@ -1,5 +1,6 @@
 # Luke Price
 # 2019.04.07
+# Update: 2019.05.16
 # Create functional data objects and perform J-fold cross validation with PCA
 # returns best number of basis functions L
 # return best number of pc functions/harmonics M
@@ -9,7 +10,7 @@
 ### nbasistry = sequence/vector of values to try for number basis       ###############################
 ### dataList = list of matrices; each matrix gets a separate fdobj      ###############################
 #######################################################################################################
-fit_Basis <- function(dataList, nbasistry) {
+fit_Basis <- function(dataList, nbasistry, doprint = TRUE) {
   
   require(fda)
   
@@ -24,7 +25,11 @@ fit_Basis <- function(dataList, nbasistry) {
   
   for (l in 1:length(nbasistry)) {
     nb <- nbasistry[l]
-    print(paste("Computing basis number: ", nb))
+    
+    if (doprint == TRUE) {
+      print(paste("Computing basis number: ", nb))
+    }
+    
     spline.basis = create.bspline.basis(rangeval = domain, nbasis = nb)
     
     for (n in 1:length(dataList)) {
@@ -51,25 +56,37 @@ fit_Basis <- function(dataList, nbasistry) {
 #           Step 1: cross validation of PCA error                               #
 #                   (call from jFoldPCA to perform J-Fold cv                    #
 #-------------------------------------------------------------------------------#
-cv_fdPCA <- function(fdobjList, nharmrange, dataList, train_domain, test_domain, jfold = NULL) {
+cv_fdPCA <- function(fdobjList, nharmrange, dataList, train_domain, test_domain, jfold = NULL, doprint = TRUE) {
   # fdobjList = list of objects of class fdobj
   # nharmrange = range of number of harmonics to be used 
   # train_domain = training domain; test_domain = testing domain (not to be confused with actual data values)
   sse <- rep(0, length(nharmrange))
   for (k in 1:length(nharmrange)) {
+    
     nharm = nharmrange[k]
+    
     if (is.null(jfold)) {
+      
       jfold = NULL
       print(paste("Computing harmonic number: ", nharm))
+      
     } else {
-      print(paste("Computing --- Fold: ", jfold,  " --- Harmonic: ", nharm))
+      
+      if (doprint == TRUE) {
+        
+        print(paste("Computing --- Fold: ", jfold,  " --- Harmonic: ", nharm))
+        
+      }
     }
+    
     for (n in 1:length(fdobjList)) {
+      
       train_pca <- pca.fd(fdobjList[[n]]$fd, nharm = nharm)
       g_hat <- eval.fd(test_domain, train_pca$harmonics) %*% t(train_pca$scores)
       error_diff <- g_hat - dataList[[n]][test_domain,]
       squared_error <- sum(sapply(error_diff, function(x) x^2))
       sse[k] <- sse[k] + squared_error
+      
     }
   }
   return(sse)
@@ -80,7 +97,7 @@ cv_fdPCA <- function(fdobjList, nharmrange, dataList, train_domain, test_domain,
 #                 creates fdobjs and performs j-fold cv pca on them      #
 #                 (calls cv_fdPCA() to perform J-Fold cv)                #
 #------------------------------------------------------------------------#
-jFoldPCA <- function(dataList, nbasis, nfolds, nharmrange) {
+jFoldPCA <- function(dataList, nbasis, nfolds, nharmrange, doprint = TRUE) {
   
   if ((length(unique(sapply(dataList, nrow))) > 1) == TRUE) {
     warning("At least one list is of different domain than others!")
@@ -105,7 +122,7 @@ jFoldPCA <- function(dataList, nbasis, nfolds, nharmrange) {
       fdobjList[[n]] <- smooth.basis(argvals = train, y = trainData, fdParobj = spline.basis)
     }
     J_errors <- cv_fdPCA(fdobjList = fdobjList, nharmrange = nharmrange, 
-                         dataList = dataList, train_domain = train, test_domain = test, jfold = fold)
+                         dataList = dataList, train_domain = train, test_domain = test, jfold = fold, doprint = doprint)
     cvErrors <- cvErrors + J_errors
     test_iter <- test_iter + fold_size
   }
@@ -153,6 +170,8 @@ block_matrix <- function(inputmatrix, outersize, innersize){
   }
   return(blocked_matrix)
 }
+
+  
 
 
 
