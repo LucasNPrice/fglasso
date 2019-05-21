@@ -3,14 +3,27 @@ functional gaussian graphical model via functional graphical lasso for network a
 
 Work still in progress. 
 
-"fglasso2.R" - fglasso to return conditional dependencies of node/variables in data; a network analysis algorithm. 
+"fglasso4.R" - fglasso to return conditional dependencies of node/variables in data; a network analysis algorithm. 
 
-  - Algorithm_1: essentially __main__ function to perform the entire fglasso algorithm. 
+  - fglasso: performs entire fglasso algorithm. 
   
                 ARGUMENTS
                 bmatrix = blocked covariance matrix in which each row/column represents a covaraince component 
                           of two nodes/variables.
                 gamma = penalizing parameter to reduce covariance estimates to zero; a numeric. 
+                epsilon = convergence norm error criterion; frobenus norm of current - previous precision matrix must be <
+                          epsilon to converge. 
+                cores = number of cpu cores to allocate for computations. NOTE: multiprocessing may slow down computation time 
+                          for small dimensional problems. High dimensional problems display huge increases in processing speed 
+                          via multiprocessing. 
+                doprint = (boolean: TRUE/FALSE); print algorithm updates during computations. 
+                iterbreak = max number of iterations to compute before returning suboptimal precision matrix (tuple with  
+                          epibreak, itertail). 
+                epibreak = secondary error criterion (numeric larger than epsilon) allowing for suboptimal convergence 
+                          following 'iterbreak' iterations with error <= 'epibreak'. 
+                itertail = number of consecutive iterations (following 'iterbreak' iterations) reaching 'epibreak' error 
+                          criterion necessary before returning suboptimal precision matrix. 
+                iterlimit = max number of iterations to compute before breaking the program and returning NaN. 
                 
 
 "jFoldPCA.R" to create functional objects. 
