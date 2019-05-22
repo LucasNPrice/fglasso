@@ -3,9 +3,9 @@ Gaussian graphical model via functional graphical lasso for network analysis
 
 Work still in progress. 
 
-"fglasso4.R" - fglasso to return conditional dependencies of node/variables in data; a network analysis algorithm. 
+"fglasso4.R" - returns conditional dependencies of nodes/variables in (high dimensional) network data.
 
-  - fglasso: performs entire fglasso algorithm. 
+  - fglasso: performs fglasso algorithm on a blocked covariance matrix. 
   
                 ARGUMENTS
                 bmatrix = blocked covariance matrix in which each row/column represents a covaraince component 
