@@ -26,7 +26,7 @@ Work still in progress.
                 iterlimit = max number of iterations to compute before breaking the program and returning NaN. 
                 
 
-"jFoldPCA.R" to create functional objects. 
+"jFoldPCA.R" - creates functional data objects and corresponding covariance matrix of fdobjs. 
 
   - fit_Basis: performs cross validation to determine the number of basis functions to best represent data. 
   
