@@ -1,7 +1,7 @@
 # fglasso
 Gaussian graphical model via functional graphical lasso for network analysis 
 
-Work still in progress. 
+Work still in progress (Python compatibility to be uploaded soon). 
 
 See 'run_fglasso.R" for best practices. 
 
