@@ -1,5 +1,5 @@
 # fglasso
-Gaussian graphical model via functional graphical lasso for network analysis 
+Gaussian graphical model via functional graphical lasso for network analysis.
 
 Work still in progress (Python compatibility to be uploaded soon). 
 
