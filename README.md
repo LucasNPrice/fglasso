@@ -1,7 +1,7 @@
 # fglasso
 Gaussian graphical model via functional graphical lasso for network analysis.
 
-See 'run_fglasso.R" for best practices. 
+See 'run_fglasso.R" for demonstration. 
 
 "fglasso4.R" - returns conditional dependencies of nodes/variables in (high dimensional) network data.
 
