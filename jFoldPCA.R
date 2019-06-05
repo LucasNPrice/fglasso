@@ -62,31 +62,21 @@ cv_fdPCA <- function(fdobjList, nharmrange, dataList, train_domain, test_domain,
   # train_domain = training domain; test_domain = testing domain (not to be confused with actual data values)
   sse <- rep(0, length(nharmrange))
   for (k in 1:length(nharmrange)) {
-    
     nharm = nharmrange[k]
-    
     if (is.null(jfold)) {
-      
       jfold = NULL
       print(paste("Computing harmonic number: ", nharm))
-      
     } else {
-      
       if (doprint == TRUE) {
-        
         print(paste("Computing --- Fold: ", jfold,  " --- Harmonic: ", nharm))
-        
       }
     }
-    
     for (n in 1:length(fdobjList)) {
-      
       train_pca <- pca.fd(fdobjList[[n]]$fd, nharm = nharm)
       g_hat <- eval.fd(test_domain, train_pca$harmonics) %*% t(train_pca$scores)
       error_diff <- g_hat - dataList[[n]][test_domain,]
       squared_error <- sum(sapply(error_diff, function(x) x^2))
       sse[k] <- sse[k] + squared_error
-      
     }
   }
   return(sse)
@@ -134,42 +124,45 @@ jFoldPCA <- function(dataList, nbasis, nfolds, nharmrange, doprint = TRUE) {
 #                 Get sample covariance matrix of the PC scores          #
 #------------------------------------------------------------------------#
 
-pc_cov <- function(fdobjList, nharm, block = FALSE) {
+pc_cor <- function(fdobjList, nharm, method = "cor", block = FALSE) {
   
   fd_pc <- vector("list", length(fdobjList))
   
   for (i in 1:length(fd_pc)) {
     fd_pc[[i]] <- pca.fd(fdobjList[[i]]$fd, nharm = nharm, centerfns = TRUE)$scores
   }
-  eigenscores <- do.call(cbind, fd_pc)
-  sample_cov <- cov(eigenscores)
   
-  if (block == FALSE) {
-    return(sample_cov)
+  eigenscores <- do.call(cbind, fd_pc)
+  
+  if (method == "cor") {
+    cor_matrix <- cor(eigenscores)
+    if (block == FALSE) {
+      return(cor_matrix)
+    } else {
+      source("block_matrix.R")
+      cor_matrix <- block_matrix(inputmatrix = cor_matrix, outersize = length(fdobjList), innersize = nharm)
+      return(cor_matrix)
+    }
+    
+  } else if (method == "cov") {
+    cov_matrix <- cov(eigenscores)
+    if (block == FALSE) {
+      return(cov_matrix)
+    } else {
+      source("block_matrix.R")
+      cov_matrix <- block_matrix(inputmatrix = cov_matrix, outersize = length(fdobjList), innersize = nharm)
+      return(cov_matrix)
+    }
+    
   } else {
-    sample_cov <- block_matrix(inputmatrix = sample_cov, outersize = length(fdobjList), innersize = nharm)
+    warning("method must be either 'cor' or 'cov'.")
   }
-  return(sample_cov)
 }
 
-#------------------------------------------------------------------------#
-#         Step 3b: block matrix function for use in pc_cov               #
-#                   return a blocked version of 'matrix'                 #
-#------------------------------------------------------------------------#
-block_matrix <- function(inputmatrix, outersize, innersize){
-  # outersize = length of outer matrix ( numberof functions/nodes represented in full matrix)
-  # innersize = length of inner  matrix (number of harmonics representing each function/node)
-  
-  inner_block <- list()
-  blocked_matrix <- matrix(inner_block, nrow = outersize, ncol = outersize)
-  
-  for (i in 1:outersize) {
-    for (j in 1:outersize) {
-      blocked_matrix[[i,j]] <- inputmatrix[c( ((i*innersize)-(innersize-1)) : (i*innersize) ), c( ((j*innersize)-(innersize-1)) : (j*innersize) )]
-    }
-  }
-  return(blocked_matrix)
+pc_cov <- function(fdobjList, nharm, method = "cov", block = FALSE) {
+  return(pc_cor(fdobjList = fdobjList, nharm = nharm, method = method, block = block))
 }
+
 
   
 
