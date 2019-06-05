@@ -1,7 +1,5 @@
-# Luke Price
-# 2019.05.16
+# Edges.R
 # Determines edges from fglasso precision matrix 
-
 
 getEdges <- function(blocked_matrix) {
   
@@ -14,7 +12,6 @@ getEdges <- function(blocked_matrix) {
   
   for (row in 1:p) {
     for (col in 1:p) {
-      
       if (all(blocked_matrix[[row,col]] == 0)) {
         edges[row,col] <- 0
       } else {
@@ -24,8 +21,6 @@ getEdges <- function(blocked_matrix) {
   }
   return(edges)
 }
-
-#-------------------------------------------------
 
 getErrors <- function(estimated_edges, simulated_edges) {
   

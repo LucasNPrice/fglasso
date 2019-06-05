@@ -1,5 +1,4 @@
-# Luke Price
-# 2019.06.02
+# fglasso4.R
 # Perform fglasso simulations
 
 ###################################################################################
@@ -64,6 +63,7 @@ fglasso <- function(bmatrix, gamma, epsilon = 0.001, cores = 1, doprint = FALSE,
       if (doprint == TRUE) {
         j_time <- as.numeric(Sys.time())
         print(paste("Function: ", j, " / ", p))
+        print(paste("gamma:", gamma))
       }
       Theta_inv <- updateTheta(Theta = Theta, Sigma = Sigma, Theta_inv = Theta_inv, p = p, j = j, cores = cores)
       Theta <- Algorithm_3(Theta = Theta, Theta_inv = Theta_inv, SampleCov = bmatrix, 
@@ -108,14 +108,6 @@ fglasso <- function(bmatrix, gamma, epsilon = 0.001, cores = 1, doprint = FALSE,
         print("Algorithm failed to converge: error 1")
         return(list("PrecisionMatrix" = NaN, "Time" = as.numeric(Sys.time()) - start_time, 
                     "numIterations" = iteration, "normErrors" = norm_error, "errorNum" = 1))
-        
-      } else if ((iteration > 10) & (tail(norm_error, n = 1) > 1)) {
-        mean_tail_error <- mean(tail(norm_error, n = 10))
-        if ( all(tail(norm_error, n = 10) >= mean_tail_error-1) & all(tail(norm_error, n = 10) <= mean_tail_error+1) ) {
-          print("Algorithm failed to converge: error 3")
-          return(list("PrecisionMatrix" = NaN, "Time" = as.numeric(Sys.time()) - start_time, 
-                      "numIterations" = iteration, "normErrors" = norm_error, "errorNum" = 3))
-        }
       }
     }
   }
@@ -134,8 +126,6 @@ fglasso <- function(bmatrix, gamma, epsilon = 0.001, cores = 1, doprint = FALSE,
                 "numIterations" = iteration, "normErrors" = norm_error, "finalNormError" = fNorm))
   }
 }
-
-
 
 ############################################################################
 ###           Step 2(a) of algorithm 1                                   ###
@@ -172,15 +162,12 @@ Algorithm_3 <- function(Theta, Theta_inv, SampleCov, gamma, epsilon, p, M, j, co
   
   iteration = 1
   error <- c(epsilon+10^3)
-  
   broken <- FALSE
   
   while (tail(error, n = 1) > epsilon) {
-    
     if (doprint == TRUE) {
       print(paste("w iteration ---", iteration))
     }
-    
     last_w <- Theta[-j,j]
     theta_nj_transpose <- t(matrix(lapply(Theta_inv[-j,-j], t), nrow = nrow(Theta_inv[-j,-j]), ncol = ncol(Theta_inv[-j,-j])))
     
@@ -224,8 +211,14 @@ Algorithm_3 <- function(Theta, Theta_inv, SampleCov, gamma, epsilon, p, M, j, co
         if (fNorm <= gamma) {
           w_j[[k]] <- matrix(0, nrow = M, ncol = M)
         } else {
-          w_j[[k]] <- matrix(nleqslv(x = diag(M), fn = get_w_jk,
-                                     jac = NULL, control=list(btol=.01, allowSingular = TRUE, maxit = 100),
+          # w_j[[k]] <- matrix(nleqslv(x = diag(M), fn = get_w_jk,
+          #                            jac = NULL, control=list(btol=.01, allowSingular = TRUE, maxit = 100),
+          #                            Theta_inv = Theta_inv, SampleCov = SampleCov,
+          #                            block_resid = block_resid, gamma = gamma,
+          #                            M = M, j = j, k = k)$x, nrow = M, ncol = M)
+          initial_guess <- matrix(solve(kronecker(Theta_inv[-j,-j][[k,k]], SampleCov[[j,j]]))%*%(-c(block_resid)), M, M)
+          w_j[[k]] <- matrix(nleqslv(x = initial_guess,fn = get_w_jk, jac = NULL, 
+                                     control=list(btol=.01, allowSingular = TRUE, maxit = 100),
                                      Theta_inv = Theta_inv, SampleCov = SampleCov,
                                      block_resid = block_resid, gamma = gamma,
                                      M = M, j = j, k = k)$x, nrow = M, ncol = M)
@@ -248,7 +241,6 @@ Algorithm_3 <- function(Theta, Theta_inv, SampleCov, gamma, epsilon, p, M, j, co
   }
 }
 
-
 ##################################################################################
 ###    get wjk by solving system of equations                                  ###
 ###    (called by Algorithm_3)                                                 ###
@@ -260,6 +252,7 @@ get_w_jk <- function(x, Theta_inv, SampleCov,
   kron_prod <- kronecker(Theta_inv[-j,-j][[k,k]], SampleCov[[j,j]])
   wj <- ((kron_prod %*% as.vector(w)) +
            as.vector(block_resid) + (gamma * (as.vector(w) / norm(w, type = "F"))))
+  
   return(wj)
 }
 
@@ -289,7 +282,6 @@ get_U <- function(Theta_inv, Theta, p, M, j, cores) {
   }
   return(Uj)
 }
-
 
 ##################################################################################
 ###    Update Sigma --- algorithm 1 part (c)                                   ###
@@ -328,7 +320,6 @@ updateSigma <- function(Sigma, Theta_inv, sampleCov, Uj, p, j, cores) {
   }
   return(Sigma)
 }
-
 
 ##################################################################################
 ###    Get Frobenius norm of current and previous precision matrix Theta       ###
