@@ -1,14 +1,12 @@
-# Luke Price
-# 2019.04.07
-# Update: 2019.05.16
+# jFoldPCA.R
 # Create functional data objects and perform J-fold cross validation with PCA
-# returns best number of basis functions L
-# return best number of pc functions/harmonics M
+# returns best number of basis functions best_basis
+# return best number of pc functions/harmonics best_nharm
 
 #######################################################################################################
-###                     Tuning for best nbasis                          ###############################
-### nbasistry = sequence/vector of values to try for number basis       ###############################
-### dataList = list of matrices; each matrix gets a separate fdobj      ###############################
+###                     Tuning for best nbasis                          ###
+### nbasistry = sequence/vector of values to try for number basis     ###
+### dataList = list of matrices; each matrix gets a separate fdobj      ###
 #######################################################################################################
 fit_Basis <- function(dataList, nbasistry, doprint = TRUE) {
   
@@ -46,20 +44,19 @@ fit_Basis <- function(dataList, nbasistry, doprint = TRUE) {
   }
 }
 
-##################################################################################
-##################################################################################
-#############         J-Fold Cross Validation with PCA          ##################
-##################################################################################
-##################################################################################
+#########################################################################################
+###             J-Fold Cross Validation with PCA                                     ####
+#########################################################################################
 
-#-------------------------------------------------------------------------------#
-#           Step 1: cross validation of PCA error                               #
-#                   (call from jFoldPCA to perform J-Fold cv                    #
-#-------------------------------------------------------------------------------#
+#---------------------------------------------------------------------------------------#
+#           Step 1: cross validation of PCA error (called from jFoldPCA)                #
+#           fdobjList = list of objects of class fdobj.                                 #
+#           nharmrange = range of number of harmonics to be used.                       #
+#           train_domain = training domain.                                             #
+#           test_domain = testing domain (not to be confused with actual data values)   #
+#---------------------------------------------------------------------------------------#
 cv_fdPCA <- function(fdobjList, nharmrange, dataList, train_domain, test_domain, jfold = NULL, doprint = TRUE) {
-  # fdobjList = list of objects of class fdobj
-  # nharmrange = range of number of harmonics to be used 
-  # train_domain = training domain; test_domain = testing domain (not to be confused with actual data values)
+
   sse <- rep(0, length(nharmrange))
   for (k in 1:length(nharmrange)) {
     nharm = nharmrange[k]
@@ -82,11 +79,11 @@ cv_fdPCA <- function(fdobjList, nharmrange, dataList, train_domain, test_domain,
   return(sse)
 }
 
-#------------------------------------------------------------------------#
-#         Step 2: J-Fold Cross Validation of PCA error                   #
-#                 creates fdobjs and performs j-fold cv pca on them      #
-#                 (calls cv_fdPCA() to perform J-Fold cv)                #
-#------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------#
+#         Step 2: J-Fold Cross Validation of PCA error                        #
+#                 creates fdobjs and performs j-fold cv pca on them           #
+#                 (calls cv_fdPCA() to perform J-Fold cv)                     #
+#-----------------------------------------------------------------------------#
 jFoldPCA <- function(dataList, nbasis, nfolds, nharmrange, doprint = TRUE) {
   
   if ((length(unique(sapply(dataList, nrow))) > 1) == TRUE) {
@@ -119,10 +116,10 @@ jFoldPCA <- function(dataList, nbasis, nfolds, nharmrange, doprint = TRUE) {
   return(list("nharm_sse" = cvErrors, "best_nharm" = nharmrange[which.min(cvErrors)]))
 }
 
-#------------------------------------------------------------------------#
-#         Step 3: Re-run PCA on all data using best nharm from j-fold cv #
-#                 Get sample covariance matrix of the PC scores          #
-#------------------------------------------------------------------------#
+#------------------------------------------------------------------------------------#
+#         Step 3: Re-run PCA on all data using best nharm from j-fold cv             #
+#                 Get sample covariance/correlation matrix of the PC scores          #
+#------------------------------------------------------------------------------------#
 
 pc_cor <- function(fdobjList, nharm, method = "cor", block = FALSE) {
   
