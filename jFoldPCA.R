@@ -3,11 +3,11 @@
 # returns best number of basis functions best_basis
 # return best number of pc functions/harmonics best_nharm
 
-#######################################################################################################
-###                     Tuning for best nbasis                          ###
-### nbasistry = sequence/vector of values to try for number basis     ###
-### dataList = list of matrices; each matrix gets a separate fdobj      ###
-#######################################################################################################
+############################################################################
+###                     Tuning for best nbasis                           ###
+### nbasistry = sequence/vector of values to try for number basis        ###
+### dataList = list of matrices; each matrix gets a separate fdobj       ###
+############################################################################
 fit_Basis <- function(dataList, nbasistry, doprint = TRUE) {
   
   require(fda)
