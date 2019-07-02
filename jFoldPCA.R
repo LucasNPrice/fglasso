@@ -8,7 +8,7 @@
 ### nbasistry = sequence/vector of values to try for number basis        ###
 ### dataList = list of matrices; each matrix gets a separate fdobj       ###
 ############################################################################
-fit_Basis <- function(dataList, nbasistry, doprint = TRUE) {
+fit_Basis <- function(dataList, nbasistry, doprint = FALSE) {
   
   require(fda)
   
@@ -20,22 +20,18 @@ fit_Basis <- function(dataList, nbasistry, doprint = TRUE) {
   
   fdobjList <- vector("list", length(dataList))
   sum_gcv <- rep(0, length(nbasistry))
-  
+
   for (l in 1:length(nbasistry)) {
     nb <- nbasistry[l]
-    
     if (doprint == TRUE) {
       print(paste("Computing basis number: ", nb))
     }
-    
     spline.basis = create.bspline.basis(rangeval = domain, nbasis = nb)
-    
     for (n in 1:length(dataList)) {
       fdobjList[[n]] <- smooth.basis(argvals = min(domain):max(domain), y = dataList[[n]], fdParobj = spline.basis)
       sum_gcv[l] = sum_gcv[l] + sum(fdobjList[[n]]$gcv, na.rm = T)
     }
   }
-  
   if (length(nbasistry) > 1) {
     nb <- nbasistry[which.min(sum_gcv)]
     return(list("best.basis" = nb, "gcvs" = sum_gcv))
@@ -91,7 +87,6 @@ jFoldPCA <- function(dataList, nbasis, nfolds, nharmrange, doprint = TRUE) {
   } else {
     full_domain <- c(1, unique(sapply(dataList, nrow)))
   }
-  
   spline.basis = create.bspline.basis(rangeval = full_domain, nbasis = nbasis)
   fdobjList <- vector("list", length(dataList))
   cvErrors <- rep(0, length(nharmrange))
@@ -127,9 +122,9 @@ pc_cor <- function(fdobjList, nharm, method = "cor", block = FALSE) {
   
   for (i in 1:length(fd_pc)) {
     fd_pc[[i]] <- pca.fd(fdobjList[[i]]$fd, nharm = nharm, centerfns = TRUE)$scores
+    dim(fd_pc[[i]]) # = eigenscores of jth function for all i 1:n samples; dim = n x nharm
   }
-  
-  eigenscores <- do.call(cbind, fd_pc)
+  eigenscores <- do.call(cbind, fd_pc) # = eigenscore matrix for all functions; dim = n x (p x nharm)
   
   if (method == "cor") {
     cor_matrix <- cor(eigenscores)
@@ -140,7 +135,6 @@ pc_cor <- function(fdobjList, nharm, method = "cor", block = FALSE) {
       cor_matrix <- block_matrix(inputmatrix = cor_matrix, outersize = length(fdobjList), innersize = nharm)
       return(cor_matrix)
     }
-    
   } else if (method == "cov") {
     cov_matrix <- cov(eigenscores)
     if (block == FALSE) {
@@ -150,20 +144,28 @@ pc_cor <- function(fdobjList, nharm, method = "cor", block = FALSE) {
       cov_matrix <- block_matrix(inputmatrix = cov_matrix, outersize = length(fdobjList), innersize = nharm)
       return(cov_matrix)
     }
-    
   } else {
     warning("method must be either 'cor' or 'cov'.")
   }
 }
 
+#------------------------------------------------------------------------------------#
+#         pc_cov() is just a wrapper for pc_cor()                                    #
+#------------------------------------------------------------------------------------#
 pc_cov <- function(fdobjList, nharm, method = "cov", block = FALSE) {
   return(pc_cor(fdobjList = fdobjList, nharm = nharm, method = method, block = block))
 }
 
-
+#------------------------------------------------------------------------------------#
+#         getEigenscores() simply calculates and returns eigenscores                 #
+#------------------------------------------------------------------------------------#
+getEigenscores <- function(fdobjList, nharm) {
   
-
-
-
-
-
+  fd_pc <- vector("list", length(fdobjList))
+  
+  for (i in 1:length(fd_pc)) {
+    fd_pc[[i]] <- pca.fd(fdobjList[[i]]$fd, nharm = nharm, centerfns = TRUE)$scores
+  }
+  eigenscores <- do.call(cbind, fd_pc)
+  return(eigenscores)
+}
