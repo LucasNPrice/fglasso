@@ -1,5 +1,7 @@
 # fglasso
-Mixture of Gaussian graphical model for network analysis. 
+Mixture of Functional Graphical Models.
+
+Algorithm to cluster distinct subpopulations in network data and to estimate each cluster's network.
 
 See 'run_fglasso.R" for demonstration. 
 
