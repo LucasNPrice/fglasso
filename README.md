@@ -1,13 +1,14 @@
 # fglasso
-Mixture of Functional Graphical Models.
+## Functional Graphical Lasso ## 
 
-Algorithm to cluster distinct subpopulations in network data and to estimate each cluster's network.
+Algorithm to estimate network connectivity/dependencies.
 
-See 'run_fglasso.R" for demonstration. 
+**run_fglasso.R** for demonstration. 
 
-"fglasso4.R" - returns conditional dependencies of nodes/variables in (high dimensional) network data.
+**fglasso4.R** 
+  - returns conditional dependencies of nodes/variables in (high dimensional) network data.
 
-  - fglasso: performs fglasso algorithm on a blocked covariance matrix. 
+  - fglasso():
   
                 ARGUMENTS
                 bmatrix = blocked covariance matrix in which each row/column represents a covaraince component 
@@ -28,9 +29,10 @@ See 'run_fglasso.R" for demonstration.
                 iterlimit = max number of iterations to compute before breaking the program and returning NaN. 
                 
 
-"jFoldPCA.R" - creates functional data objects and corresponding covariance matrix of fdobjs. 
+**jFoldPCA.R** 
+  - creates functional data objects and corresponding covariance matrix of fdobjs. 
 
-  - fit_Basis: performs cross validation to determine the number of basis functions to best represent data. 
+  - fit_Basis(): performs cross validation to determine the number of basis functions to best represent data. 
   
                ARGUMENTS
                dataList = list of data; each element in list is an observation. 
@@ -43,7 +45,7 @@ See 'run_fglasso.R" for demonstration.
                fdobjList = list of functional data objects representing the input dataList ; only 
                             returned if nbasistry = 1. 
               
-  - jFoldPCA: performs j-fold cross validation principle components analysis to select optimal number
+  - jFoldPCA(): performs j-fold cross validation principle components analysis to select optimal number
               of principle components to represenet data; creates fdobjs and performs j-fold cv pca on the fdobjs. 
               
               ARGUMENTS
@@ -56,14 +58,14 @@ See 'run_fglasso.R" for demonstration.
               nharm_sse = list of sum squared error for each number of harmonics fit. 
               best_nharm = number of harmonic functions found to result in lowest cv error
               
-  - pc_cov: fit functional objects and returns the covaraince matrix of the fitted objects
+  - pc_cov(): fit functional objects and returns the covaraince matrix of the fitted objects
   
               ARGUMENTS
               fdobjList = list of functional data objects 
               nharm = number of principle compnents to retain and fit the fdobjs 
               block = whether or not to return a blocked matrix; default is FALSE
               
-  - block_matrix: creates a blocked matrix 
+  - block_matrix(): creates a blocked matrix 
   
               ARGUMENTS
               inputmatrix = input matrix which will become a blocked matrix 
